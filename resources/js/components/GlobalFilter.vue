@@ -2,7 +2,7 @@
   <div v-if="card.filters.length > 0" class="h-auto md:col-span-12">
     <div class="mb-4 flex" v-if="card.resettable">
       <h1
-        class="text-90 font-normal text-xl md:text-2xl mb-3 items-center mt-6" 
+        class="text-90 font-normal text-xl md:text-2xl mb-3 items-center mt-6"
       >
         <span>{{ card.title }}</span>
       </h1>
@@ -32,7 +32,7 @@
             <label
               :for="filter.name"
               class="block mb-3 mr-3 text-80 pt-2 leading-tight whitespace-nowrap"
-              >{{ filter.name }}</label
+            >{{ filter.name }}</label
             >
             <input
               v-if="filter.component === 'date-filter'"
@@ -62,7 +62,8 @@
                 :name="option.name"
                 :checked="option.checked"
                 @input="handleChange(filter, $event)"
-                >{{ option.name }}</checkbox-with-label
+              >{{ option.name }}
+              </checkbox-with-label
               >
             </div>
 
@@ -80,7 +81,30 @@
                 &mdash;
               </option>
               <option
+                v-if="!filter.dependsOn"
                 v-for="option in filter.options"
+                :key="option.value"
+                :value="option.value"
+                :selected="
+                  option.value === filter.value ||
+                  option.value === filter.currentValue
+                "
+              >
+                {{ option.label }}
+              </option>
+              <option
+                v-else-if="filter.dependsOn && this.card.filters.find((_filter) => _filter.class === filter.dependsOn)?.currentValue"
+                v-for="option in (
+                  Object.entries(
+                    filter.options.find(
+                      (_option) => _option.label === this.card.filters.find(
+                        (_filter) => _filter.class === filter.dependsOn
+                      ).currentValue
+                    )
+                  )
+                  .filter(([key, value]) => key !== 'label')
+                  .map(([key, value]) => ({ value, label: key }))
+                )"
                 :key="option.value"
                 :value="option.value"
                 :selected="
@@ -106,13 +130,13 @@ export default {
   props: {
     card: {
       type: Object,
-      required: true,
-    },
+      required: true
+    }
   },
   data: () => ({
     selectedCheckboxs: {
-      type: Object,
-    },
+      type: Object
+    }
   }),
   created() {
     Nova.$on("global-filter-request", (filterClasses) => {
@@ -124,6 +148,10 @@ export default {
         );
       }
       Nova.$emit("global-filter-response", filters);
+    });
+
+    Nova.$on("global-filter-changed", (filterClasses) => {
+
     });
   },
   methods: {
@@ -144,6 +172,13 @@ export default {
 
       if (filter.currentValue !== value) {
         filter.currentValue = value;
+
+        const dependedFilter = this.card.filters.find((_filter) => _filter.dependsOn === filter.class);
+        if (dependedFilter) {
+          dependedFilter.currentValue = '';
+          Nova.$emit("global-filter-changed", dependedFilter);
+        }
+
         Nova.$emit("global-filter-changed", filter);
       }
     },
@@ -153,8 +188,8 @@ export default {
         return filter;
 
       });
-       Nova.$emit("global-filter-reset", filters);
-    },
-  },
+      Nova.$emit("global-filter-reset", filters);
+    }
+  }
 };
 </script>

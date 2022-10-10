@@ -15,6 +15,6 @@ mix.alias({
   ),
   "@": path.join(
     __dirname,
-    "../../vendor/laravel/nova/resources/js"
+    "vendor/laravel/nova/resources/js"
 ),
 });
