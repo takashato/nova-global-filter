@@ -97,8 +97,8 @@
                 v-for="option in (
                   Object.entries(
                     filter.options.find(
-                      (_option) => _option.label === this.card.filters.find(
-                        (_filter) => _filter.class === filter.dependsOn
+                      (_option) => _option.label == this.card.filters.find(
+                        (_filter) => _filter.class == filter.dependsOn
                       ).currentValue
                     )
                   )

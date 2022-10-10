@@ -8,12 +8,9 @@ trait GlobalFilterable
 {
     public function globalFiltered($request, $model, $filters = [])
     {
-
         $model = $model instanceof Builder ? $model : (new $model)->newQuery();
 
         if ($request->has('filters')) {
-
-            //dd(json_decode($request->filters, true));
             $request->range = optional($request)->range ?? 3600;
 
             foreach (json_decode($request->filters, true) as $filter => $value) {
@@ -21,14 +18,17 @@ trait GlobalFilterable
                     continue;
                 }
 
-                $model = (new $filter)->apply($request, $model, $value);
+                if (count($filters) > 0 && !in_array($filter, $filters)) {
+                    continue;
+                }
 
+                $model = (new $filter)->apply($request, $model, $value);
             }
-        }else {
+        } else {
             foreach ($filters as $filter) {
                 $currentFilter = new $filter;
-                
-                if(!empty($currentFilter->default())) {
+
+                if (!empty($currentFilter->default())) {
                     $model = $currentFilter->apply($request, $model, $currentFilter->default());
                 }
             }
