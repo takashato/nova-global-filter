@@ -25,7 +25,7 @@
       >
         <div
           v-for="(filter, index) in card.filters"
-          class="w-auto"
+          class="flex-1"
           :key="index"
         >
           <div class="px-8 py-6">
