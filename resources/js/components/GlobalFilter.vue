@@ -1,5 +1,5 @@
 <template>
-  <div v-if="card.filters.length > 0" class="h-auto md:col-span-12">
+  <div v-if="card.filters.length > 0" class="md:col-span-12 overflow-y-visible">
     <div class="mb-4 flex" v-if="card.resettable">
       <h1
         class="text-90 font-normal text-xl md:text-2xl mb-3 items-center mt-6"
@@ -19,8 +19,8 @@
       v-if="card.filters.length > 0"
       class="bg-30 border-b border-60 rounded-lg shadow h-auto"
     >
-      <scroll-wrap
-        class="flex-wrap bg-white"
+      <div
+        class="flex-wrap bg-white overflow-visible"
         :class="{ 'flex w-auto': card.inline, 'w-1/3': !card.inline }"
       >
         <div
@@ -32,8 +32,7 @@
             <label
               :for="filter.name"
               class="block mb-3 mr-3 text-80 pt-2 leading-tight whitespace-nowrap"
-            >{{ filter.name }}</label
-            >
+            >{{ filter.name }}</label>
             <input
               v-if="filter.component === 'date-filter'"
               type="date"
@@ -67,34 +66,42 @@
               >
             </div>
 
-            <select
-              :id="filter.name"
-              v-if="filter.component === 'select-filter'"
-              @change="handleChange(filter, $event)"
-              class="w-full form-control form-select form-input-bordered"
-            >
-              <option
-                value
-                selected
-                v-if="!filter.currentValue && filter.currentValue !== 0"
+            <template v-if="filter.component === 'select-filter'">
+              <month-picker-input
+                v-if="filter.dependsOn && this.card.filters.find((_filter) => _filter.class === filter.dependsOn)?.currentValue == 'MONTH'"
+                class="z-10 w-full"
+                :months="[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]"
+                date-format="%n/%Y"
+                @change="handleChange(filter, $event)"
+              ></month-picker-input>
+              <select
+                :id="filter.name"
+                v-else
+                @change="handleChange(filter, $event)"
+                class="w-full form-control form-select form-input-bordered"
               >
-                &mdash;
-              </option>
-              <option
-                v-if="!filter.dependsOn"
-                v-for="option in filter.options"
-                :key="option.value"
-                :value="option.value"
-                :selected="
+                <option
+                  value
+                  selected
+                  v-if="!filter.currentValue && filter.currentValue !== 0"
+                >
+                  &mdash;
+                </option>
+                <option
+                  v-if="!filter.dependsOn"
+                  v-for="option in filter.options"
+                  :key="option.value"
+                  :value="option.value"
+                  :selected="
                   option.value === filter.value ||
                   option.value === filter.currentValue
                 "
-              >
-                {{ option.label }}
-              </option>
-              <option
-                v-else-if="filter.dependsOn && this.card.filters.find((_filter) => _filter.class === filter.dependsOn)?.currentValue"
-                v-for="option in (
+                >
+                  {{ option.label }}
+                </option>
+                <option
+                  v-else-if="filter.dependsOn && this.card.filters.find((_filter) => _filter.class === filter.dependsOn)?.currentValue"
+                  v-for="option in (
                   Object.entries(
                     filter.options.find(
                       (_option) => _option.label == this.card.filters.find(
@@ -105,19 +112,20 @@
                   .filter(([key, value]) => key !== 'label')
                   .map(([key, value]) => ({ value, label: key }))
                 )"
-                :key="option.value"
-                :value="option.value"
-                :selected="
+                  :key="option.value"
+                  :value="option.value"
+                  :selected="
                   option.value === filter.value ||
                   option.value === filter.currentValue
                 "
-              >
-                {{ option.label }}
-              </option>
-            </select>
+                >
+                  {{ option.label }}
+                </option>
+              </select>
+            </template>
           </div>
         </div>
-      </scroll-wrap>
+      </div>
     </div>
   </div>
 </template>
@@ -158,7 +166,11 @@ export default {
     handleChange(filter, event) {
       let value = event;
       if (typeof event === "object") {
-        value = event.target.value;
+        if (event.from && event.to) {
+          value = JSON.stringify([event.from, event.to]);
+        } else {
+          value = event.target.value;
+        }
       }
 
       if (filter.component === "boolean-filter") {
@@ -176,7 +188,7 @@ export default {
         const dependedFilter = this.card.filters.find((_filter) => _filter.dependsOn === filter.class);
         if (dependedFilter) {
           const optionList = dependedFilter.options.find((_option) => _option.label == filter.currentValue);
-          dependedFilter.currentValue = Object.values(optionList).filter((key) => key !== 'label')[1];
+          dependedFilter.currentValue = Object.values(optionList).filter((key) => key !== "label")[1];
           Nova.$emit("global-filter-changed", dependedFilter);
         }
 
@@ -194,3 +206,20 @@ export default {
   }
 };
 </script>
+<style>
+.month-picker-input-container {
+  width: 100% !important;
+}
+
+.month-picker-input {
+  width: 100%;
+  height: 2.25rem !important;
+  padding: 0 2rem 0 0.75rem !important;
+
+  border-color: rgba(var(--colors-gray-300)) !important;
+  border-width: 1px !important;
+
+  font-size: .875rem !important;
+  line-height: 1.25rem;
+}
+</style>
