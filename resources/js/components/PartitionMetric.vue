@@ -1,3 +1,14 @@
+<template>
+  <BasePartitionMetric
+    :title="card.name"
+    :help-text="card.helpText"
+    :help-width="card.helpWidth"
+    :chart-data="chartData"
+    :loading="loading"
+    :custom-total="customTotal"
+  />
+</template>
+
 <script>
 import Partitionmetric from "@/components/Metrics/PartitionMetric";
 import FilterBehavior from "./FilterBehavior";
@@ -15,11 +26,12 @@ export default {
       ).then(
         ({
           data: {
-            value: { value }
+            value: { value, customTotal }
           }
         }) => {
           this.chartData = value;
           this.loading = false;
+          this.customTotal = customTotal;
         }
       );
     }
