@@ -1,8 +1,11 @@
 <template>
   <LoadingCard :loading="loading" class="pt-4">
-    <div class="h-6 flex items-center px-6 mb-4">
-      <h3 class="mr-3 leading-tight text-sm font-bold">{{ card.name }}</h3>
-      <HelpTextTooltip :text="card.helpText" :width="card.helpWidth" />
+    <div class="h-6 flex items-center px-6 mb-4 flex">
+      <div>
+        <h3 class="mr-3 leading-tight text-sm font-bold">{{ card.name }}</h3>
+        <HelpTextTooltip :text="card.helpText" :width="card.helpWidth" />
+      </div>
+      <div class="flex-1 text-right text-gray-400 text-xs truncate">{{ customTotal }}</div>
     </div>
 
     <div class="mb-5 pb-4">
@@ -23,7 +26,7 @@
 <script>
 import TableMetric from "@/components/Metrics/TableMetric";
 import FilterBehavior from "./FilterBehavior";
-import  {minimum}  from "@/util";
+import { minimum } from "@/util";
 
 export default {
   extends: TableMetric,
@@ -34,11 +37,19 @@ export default {
 
       minimum(Nova.request().get(this.metricEndpoint, this.filterPayload())).then(
         ({ data: { value } }) => {
-          this.value = value
-          this.loading = false
+          if (value.hasOwnProperty("customTotal")) {
+            this.value = value.rows;
+            this.customTotal = value.customTotal;
+            this.loading = false;
+            return;
+          }
+
+          this.value = value;
+          this.loading = false;
         }
-      )
+      );
     }
   }
-};
+}
+;
 </script>
