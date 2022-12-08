@@ -188,7 +188,7 @@ export default {
         const dependedFilter = this.card.filters.find((_filter) => _filter.dependsOn === filter.class);
         if (dependedFilter) {
           const optionList = dependedFilter.options.find((_option) => _option.label == filter.currentValue);
-          dependedFilter.currentValue = Object.values(optionList).filter((key) => key !== "label")[1];
+          dependedFilter.currentValue = optionList ? Object.values(optionList).filter((key) => key !== "label")[1] : null;
           Nova.$emit("global-filter-changed", dependedFilter);
         }
 
