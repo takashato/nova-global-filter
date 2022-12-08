@@ -5,7 +5,7 @@
         <h3 class="mr-3 leading-tight text-sm font-bold">{{ card.name }}</h3>
         <HelpTextTooltip :text="card.helpText" :width="card.helpWidth" />
       </div>
-      <div class="flex-1 text-right text-gray-400 text-xs truncate">{{ customTotal }}</div>
+      <div class="flex-1 text-right text-gray-400 text-xs">{{ customTotal }}</div>
     </div>
 
     <div class="mb-5 pb-4">
