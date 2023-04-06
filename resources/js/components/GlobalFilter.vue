@@ -2,97 +2,112 @@
   <div v-if="card.filters.length > 0" class="md:col-span-12 overflow-y-visible">
     <div class="mb-4 flex" v-if="card.resettable">
       <h1
-        class="text-90 font-normal text-xl md:text-2xl mb-3 items-center mt-6"
+          class="text-90 font-normal text-xl md:text-2xl mb-3 items-center mt-6"
       >
         <span>{{ card.title }}</span>
       </h1>
       <div class="justify-end items-center ml-auto mr-0 self-end">
         <button
-          class="shadow rounded focus:outline-none ring-primary-200 dark:ring-gray-600 focus:ring bg-primary-500 hover:bg-primary-400 active:bg-primary-600 text-white dark:text-gray-800 inline-flex items-center font-bold px-4 h-9 text-sm flex-shrink-0"
-          @click="resetFilters(card.filters)"
+            class="shadow rounded focus:outline-none ring-primary-200 dark:ring-gray-600 focus:ring bg-primary-500 hover:bg-primary-400 active:bg-primary-600 text-white dark:text-gray-800 inline-flex items-center font-bold px-4 h-9 text-sm flex-shrink-0"
+            @click="resetFilters(card.filters)"
         >
           {{ __("Reset") }}
         </button>
       </div>
     </div>
     <div
-      v-if="card.filters.length > 0"
-      class="bg-30 border-b border-60 rounded-lg shadow h-auto"
+        v-if="card.filters.length > 0"
+        class="bg-30 border-b border-60 rounded-lg shadow h-auto"
     >
       <div
-        class="flex-wrap bg-white overflow-visible"
-        :class="{ 'flex w-auto': card.inline, 'w-1/3': !card.inline }"
+          class="flex-wrap bg-white overflow-visible"
+          :class="{ 'flex w-auto': card.inline, 'w-1/3': !card.inline }"
       >
         <div
-          v-for="(filter, index) in card.filters"
-          class="flex-1"
-          :key="index"
+            v-for="(filter, index) in card.filters"
+            class="flex-1"
+            :key="index"
         >
           <div class="px-8 py-6">
             <label
-              :for="filter.name"
-              class="block mb-3 mr-3 text-80 pt-2 leading-tight whitespace-nowrap"
+                :for="filter.name"
+                class="block mb-3 mr-3 text-80 pt-2 leading-tight whitespace-nowrap"
             >{{ filter.name }}</label>
             <input
-              v-if="filter.component === 'date-filter'"
-              type="date"
-              class="w-full form-control form-input form-input-bordered"
-              ref="dateTimePicker"
-              :id="filter.name"
-              dusk="date-filter"
-              name="date-filter"
-              :value="filter.value || filter.currentValue"
-              :class="errorClasses"
-              @input.prevent=""
-              @change="handleChange(filter, $event)"
+                v-if="filter.component === 'date-filter'"
+                type="date"
+                class="w-full form-control form-input form-input-bordered"
+                ref="dateTimePicker"
+                :id="filter.name"
+                dusk="date-filter"
+                name="date-filter"
+                :value="filter.value || filter.currentValue"
+                :class="errorClasses"
+                @input.prevent=""
+                @change="handleChange(filter, $event)"
             />
 
             <div
-              v-if="filter.component === 'boolean-filter'"
-              class="flex flex-wrap"
+                v-if="filter.component === 'boolean-filter'"
+                class="flex flex-wrap"
             >
               <checkbox-with-label
-                :class="{
+                  :class="{
                   'flex mr-3 -mb-2 pb-3 w-auto': card.inline,
                   'w-full mt-2': !card.inline,
                 }"
-                v-for="option in filter.options"
-                :key="option.name"
-                :name="option.name"
-                :checked="option.checked"
-                @input="handleChange(filter, $event)"
+                  v-for="option in filter.options"
+                  :key="option.name"
+                  :name="option.name"
+                  :checked="option.checked"
+                  @input="handleChange(filter, $event)"
               >{{ option.name }}
               </checkbox-with-label
               >
             </div>
 
+            <template v-if="filter.component === 'multiselect-filter'">
+              <VueMultiselect
+                  :id="filter.name"
+                  :options="filter.options"
+                  label="label"
+                  track-by="value"
+                  @select="handleMultiselectSelected(filter, $event)"
+                  @remove="handleMultiselectSelected(filter, $event)"
+                  v-model="filter.currentValue"
+                  multiple
+                  select-label=""
+                  :placeholder="__('Select options')"
+              >
+              </VueMultiselect>
+            </template>
             <template v-if="filter.component === 'select-filter'">
               <month-picker-input
-                v-if="filter.dependsOn && this.card.filters.find((_filter) => _filter.class === filter.dependsOn)?.currentValue == 'MONTH'"
-                class="z-10 w-full"
-                :months="[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]"
-                date-format="%n/%Y"
-                @change="handleChange(filter, $event)"
+                  v-if="filter.dependsOn && this.card.filters.find((_filter) => _filter.class === filter.dependsOn)?.currentValue == 'MONTH'"
+                  class="z-10 w-full"
+                  :months="[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]"
+                  date-format="%n/%Y"
+                  @change="handleChange(filter, $event)"
               ></month-picker-input>
               <select
-                :id="filter.name"
-                v-else
-                @change="handleChange(filter, $event)"
-                class="w-full form-control form-select form-input-bordered"
+                  :id="filter.name"
+                  v-else
+                  @change="handleChange(filter, $event)"
+                  class="w-full form-control form-select form-input-bordered"
               >
                 <option
-                  value
-                  selected
-                  v-if="!filter.currentValue && filter.currentValue !== 0"
+                    value
+                    selected
+                    v-if="!filter.currentValue && filter.currentValue !== 0"
                 >
                   &mdash;
                 </option>
                 <option
-                  v-if="!filter.dependsOn"
-                  v-for="option in filter.options"
-                  :key="option.value"
-                  :value="option.value"
-                  :selected="
+                    v-if="!filter.dependsOn"
+                    v-for="option in filter.options"
+                    :key="option.value"
+                    :value="option.value"
+                    :selected="
                   option.value === filter.value ||
                   option.value === filter.currentValue
                 "
@@ -100,8 +115,8 @@
                   {{ option.label }}
                 </option>
                 <option
-                  v-else-if="filter.dependsOn && this.card.filters.find((_filter) => _filter.class === filter.dependsOn)?.currentValue"
-                  v-for="option in (
+                    v-else-if="filter.dependsOn && this.card.filters.find((_filter) => _filter.class === filter.dependsOn)?.currentValue"
+                    v-for="option in (
                   Object.entries(
                     filter.options.find(
                       (_option) => _option.label == this.card.filters.find(
@@ -112,9 +127,9 @@
                   .filter(([key, value]) => key !== 'label')
                   .map(([key, value]) => ({ value, label: key }))
                 )"
-                  :key="option.value"
-                  :value="option.value"
-                  :selected="
+                    :key="option.value"
+                    :value="option.value"
+                    :selected="
                   option.value === filter.value ||
                   option.value === filter.currentValue
                 "
@@ -131,7 +146,8 @@
 </template>
 
 <script>
-import { Filterable, InteractsWithQueryString } from "@/mixins";
+import {Filterable, InteractsWithQueryString} from "@/mixins";
+import VueMultiselect from 'vue-multiselect'
 
 export default {
   mixins: [Filterable, InteractsWithQueryString],
@@ -140,6 +156,9 @@ export default {
       type: Object,
       required: true
     }
+  },
+  components: {
+    VueMultiselect
   },
   data: () => ({
     selectedCheckboxs: {
@@ -152,7 +171,7 @@ export default {
 
       if (filterClasses && filterClasses.length) {
         filters = filters.filter((filter) =>
-          filterClasses.includes(filter.class)
+            filterClasses.includes(filter.class)
         );
       }
       Nova.$emit("global-filter-response", filters);
@@ -164,10 +183,13 @@ export default {
   },
   methods: {
     handleChange(filter, event) {
+      console.log(event);
       let value = event;
       if (typeof event === "object") {
         if (event.from && event.to) {
           value = JSON.stringify([event.from, event.to]);
+        } else if (event.hasOwnProperty('value')) {
+          value = event.value;
         } else {
           value = event.target.value;
         }
@@ -196,13 +218,19 @@ export default {
       }
     },
     resetFilters(filters) {
-      filters = filters.map(function(filter) {
+      filters = filters.map(function (filter) {
         filter.currentValue = null;
         return filter;
 
       });
       Nova.$emit("global-filter-reset", filters);
-    }
+    },
+    handleMultiselectSelected(filter, event) {
+      Nova.$emit("global-filter-changed", filter);
+    },
+    handleMonthPickerSelected(filter, event) {
+      Nova.$emit("global-filter-changed", filter);
+    },
   }
 };
 </script>
@@ -221,5 +249,15 @@ export default {
 
   font-size: .875rem !important;
   line-height: 1.25rem;
+}
+
+.multiselect, .multiselect__input, .multiselect__single {
+  font-size: 0.875rem !important;
+}
+
+.multiselect__tag,
+.multiselect__option--highlight,
+.multiselect__option--highlight::after{
+  background: #0BA5E9 !important;
 }
 </style>
